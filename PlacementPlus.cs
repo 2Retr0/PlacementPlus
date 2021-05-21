@@ -10,9 +10,12 @@ using Netcode;
 using StardewModdingAPI;
 using StardewModdingAPI.Events;
 using StardewValley;
+using StardewValley.Locations;
 using StardewValley.Network;
+using StardewValley.Objects;
 using StardewValley.TerrainFeatures;
 using StardewValley.Tools;
+using xTile.Dimensions;
 using Object = StardewValley.Object;
 
 #endregion
@@ -59,6 +62,9 @@ namespace PlacementPlus
         {
             var harmony = HarmonyInstance.Create(ModManifest.UniqueID); harmony.PatchAll();
             Instance = this;
+            
+            // Ensure that modState.tileAtPlayerCursor is initialized for patches
+            modState.tileAtPlayerCursor = new Vector2();
 
             // We keep track of the time since the player last placed any flooring to counteract input spam.
             // TODO: THIS IS REALLY HACKY BUT I DUNNO WHAT CAN BE DONE
@@ -73,7 +79,7 @@ namespace PlacementPlus
                 modState.currentTerrainFeatures = modState.currentPlayer.currentLocation.terrainFeatures;
                 modState.tileAtPlayerCursor     = e.Cursor.Tile;
                 modState.currentlyHeldItem      = modState.currentPlayer.CurrentItem;
-                
+
                 SwapTile(o, e);
             };
         }
@@ -96,39 +102,82 @@ namespace PlacementPlus
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event data.</param>
         [SuppressMessage("ReSharper", "ConvertToLocalFunction")]
+        [SuppressMessage("ReSharper", "UnusedParameter.Local")]
         private void SwapTile(object sender, ButtonsChangedEventArgs e)
         {
-            Action<Item, Vector2> SwapFlooring    = (fi, ft) => {
-                if (FlooringAtTileIsPlayerItem(fi, ft)) return;
+            Action<Item, Vector2> swapFlooring      = (i, t) => {
+                if (FlooringAtTileIsPlayerItem(i, t)) return;
 
-                modState.currentTerrainFeatures[ft].performToolAction(new Axe(), 1, ft, modState.currentPlayer.currentLocation);
-                modState.currentTerrainFeatures.Remove(ft);
-                modState.currentTerrainFeatures.Add(ft, new Flooring(ITEM_TO_TILE_ID[fi.ParentSheetIndex]));
+                modState.currentTerrainFeatures[t].performToolAction(null, 1, t, modState.currentPlayer.currentLocation);
+                modState.currentTerrainFeatures.Remove(t);
+                modState.currentTerrainFeatures.Add(t, new Flooring(ITEM_TO_TILE_ID[i.ParentSheetIndex]));
 
                 modState.currentPlayer.reduceActiveItemByOne();
             };
             
-            Func<Vector2, bool> preliminaryChecks = t => {
+            Action<Item, Chest, Vector2> swapChest = (i, o, t) => {
+                var currentLocation  = modState.currentPlayer.currentLocation;
+
+                // If the current location is not a valid location to replace chests.
+                if (currentLocation is MineShaft || currentLocation is VolcanoDungeon) return;
+
+                var chestToPlace = new Chest(true, t, i.ParentSheetIndex) { shakeTimer = 100 };
+                // Use reflection to set private chest coloring and inventory.
+                Helper.Reflection.GetField<NetColor>(chestToPlace, "playerChoiceColor").SetValue(o.playerChoiceColor);
+                Helper.Reflection.GetField<NetObjectList<Item>>(chestToPlace, "items").SetValue(new NetObjectList<Item>(o.items));
+
+                // Clearing out the object chest's inventory before 'dropping' it and playing its destruction sound.
+                o.items.Clear(); o.clearNulls();
+                currentLocation.debris.Add(new Debris(-o.ParentSheetIndex, 
+                                                          t * 64f + new Vector2(32f, 32f), 
+                                                          modState.currentPlayer.Position));
+                currentLocation.playSound( o.ParentSheetIndex == 130 ? "axe" : "hammer");
+                
+                // Spawning broken particles to simulate chest breaking.
+                Game1.createRadialDebris(currentLocation, o.ParentSheetIndex == 130 ? 12 : 14, 
+                    (int) t.X, (int) t.Y, 4, false);
+                
+                currentLocation.Objects.Remove(t);
+                currentLocation.objects.Add(t, chestToPlace);
+                
+                modState.currentPlayer.reduceActiveItemByOne();
+            };
+            
+            Func<Vector2, bool> preliminaryChecks   = t => {
                 // * Begin preliminary checks * //
+                var currentlyHeldItemNotNull = modState.currentlyHeldItem != null;
                 var isHoldingActionUseButton = e.Held.Any(button => button.IsActionButton() || button.IsUseToolButton());
                 var isCursorInValidPosition  = Utility.tileWithinRadiusOfPlayer((int) t.X, (int) t.Y, 
                                                                                 1, modState.currentPlayer);
 
                 return modState.timeSinceLastPlacement > 10 &&
+                       currentlyHeldItemNotNull             &&
                        isHoldingActionUseButton             &&
                        isCursorInValidPosition;
             };
 
-            // TODO: ALLOW REPLACEMENT FOR OLD FENCES WITH NEW FENCES AND CHESTS WITH ANY CHEST
+            // TODO: ALLOW REPLACEMENT FOR OLD FENCES WITH NEW FENCES
             if (!preliminaryChecks(e.Cursor.Tile)) return; // Preliminary checks
 
+            // * Flooring checks * //
             var tileAtCursorIsFlooring = modState.currentTerrainFeatures.ContainsKey(e.Cursor.Tile) && 
                                          modState.currentTerrainFeatures[e.Cursor.Tile] is Flooring;
-            var isHoldingFlooring      = modState.currentlyHeldItem?.category.Value == Object.furnitureCategory;
+            var isHoldingFlooring      = modState.currentlyHeldItem.category.Value == Object.furnitureCategory;
 
-            if (!(tileAtCursorIsFlooring && isHoldingFlooring)) return;
+            // * Chest checks * //
+            // ParentSheetIndex = 130 -> Wooden Chest, ParentSheetIndex = 232 -> Stone Chest
+            var objectAtTile           = modState.currentPlayer.currentLocation.getObjectAtTile((int) e.Cursor.Tile.X, 
+                                                                                                (int) e.Cursor.Tile.Y);
+            var objectAtTileIsChest    = objectAtTile != null &&
+                                         objectAtTile.ParentSheetIndex != modState.currentlyHeldItem.ParentSheetIndex && 
+                                         new [] { 130, 232 }.Contains(objectAtTile.ParentSheetIndex);
+            var isHoldingChest         = new [] { 130, 232 }.Contains(modState.currentlyHeldItem.ParentSheetIndex);
+
+            if (tileAtCursorIsFlooring && isHoldingFlooring)
+                swapFlooring(modState.currentlyHeldItem, modState.tileAtPlayerCursor);
+            else if (objectAtTileIsChest && isHoldingChest)
+                swapChest(modState.currentlyHeldItem, (Chest) objectAtTile, e.Cursor.Tile);
             
-            SwapFlooring(modState.currentlyHeldItem, modState.tileAtPlayerCursor);
             modState.timeSinceLastPlacement = 0;
         }
 
