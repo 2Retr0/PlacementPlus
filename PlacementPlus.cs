@@ -14,8 +14,6 @@ using StardewValley.Locations;
 using StardewValley.Network;
 using StardewValley.Objects;
 using StardewValley.TerrainFeatures;
-using StardewValley.Tools;
-using xTile.Dimensions;
 using Object = StardewValley.Object;
 
 #endregion
@@ -23,7 +21,6 @@ using Object = StardewValley.Object;
 namespace PlacementPlus
 {
     // Lost code: https://pastebin.com/AyCbCMZv
-    /// <summary>The mod entry point.</summary>
     [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
     public class PlacementPlus : Mod
     {
@@ -53,11 +50,11 @@ namespace PlacementPlus
         // Static instance of entry class to allow for static mod classes (i.e. patch classes) to interact with entry class data.
         internal static PlacementPlus Instance { get; private set; }
 
+        
+        
         /*********
         ** Public methods
         *********/
-        /// <summary>The mod entry point, called after the mod is first loaded.</summary>
-        /// <param name="helper">Provides simplified APIs for writing mods.</param>
         public override void Entry(IModHelper helper)
         {
             var harmony = HarmonyInstance.Create(ModManifest.UniqueID); harmony.PatchAll();
@@ -67,7 +64,7 @@ namespace PlacementPlus
             modState.tileAtPlayerCursor = new Vector2();
 
             // We keep track of the time since the player last placed any flooring to counteract input spam.
-            // TODO: THIS IS REALLY HACKY BUT I DUNNO WHAT CAN BE DONE
+            // TODO: THIS IS REALLY HACKY BUT I DUNNO HOW ELSE TO DO IT
             helper.Events.GameLoop.UpdateTicked += (o, e) => modState.timeSinceLastPlacement++;
 
             helper.Events.GameLoop.DayStarted   += (o, e) => modState.currentPlayer = Game1.player;
@@ -85,6 +82,7 @@ namespace PlacementPlus
         }
 
 
+        
         /*********
         ** Internal methods
         *********/
@@ -95,19 +93,21 @@ namespace PlacementPlus
         }
 
 
+        
         /*********
         ** Private methods
         *********/
-        /// <summary>Raised after the player presses a button on the keyboard, controller, or mouse.</summary>
-        /// <param name="sender">The event sender.</param>
-        /// <param name="e">The event data.</param>
         [SuppressMessage("ReSharper", "ConvertToLocalFunction")]
         [SuppressMessage("ReSharper", "UnusedParameter.Local")]
         private void SwapTile(object sender, ButtonsChangedEventArgs e)
         {
-            Action<Item, Vector2> swapFlooring      = (i, t) => {
+            Action<Item, Vector2> swapFlooring     = (i, t) => {
+                // * Begin swap flooring * //
+                // Ensure the player cannot swap a flooring of the same type.
                 if (FlooringAtTileIsPlayerItem(i, t)) return;
 
+                // performToolAction() drops the flooring at tile as an item and generates the respective destruction debris,
+                // destruction sound, etc.
                 modState.currentTerrainFeatures[t].performToolAction(null, 1, t, modState.currentPlayer.currentLocation);
                 modState.currentTerrainFeatures.Remove(t);
                 modState.currentTerrainFeatures.Add(t, new Flooring(ITEM_TO_TILE_ID[i.ParentSheetIndex]));
@@ -116,6 +116,10 @@ namespace PlacementPlus
             };
             
             Action<Item, Chest, Vector2> swapChest = (i, o, t) => {
+                // * Begin swap chest * //
+                // Ensure the player cannot swap a chest of the same type.
+                if (o.ParentSheetIndex == i.ParentSheetIndex) return;
+                
                 var currentLocation  = modState.currentPlayer.currentLocation;
 
                 // If the current location is not a valid location to replace chests.
@@ -129,12 +133,12 @@ namespace PlacementPlus
                 // Clearing out the object chest's inventory before 'dropping' it and playing its destruction sound.
                 o.items.Clear(); o.clearNulls();
                 currentLocation.debris.Add(new Debris(-o.ParentSheetIndex, 
-                                                          t * 64f + new Vector2(32f, 32f), 
-                                                          modState.currentPlayer.Position));
-                currentLocation.playSound( o.ParentSheetIndex == 130 ? "axe" : "hammer");
+                                                      t * 64f + new Vector2(32f, 32f), 
+                                                      modState.currentPlayer.Position));
+                currentLocation.playSound( o.ParentSheetIndex == (int) ChestInfo.Chest ? "axe" : "hammer");
                 
                 // Spawning broken particles to simulate chest breaking.
-                Game1.createRadialDebris(currentLocation, o.ParentSheetIndex == 130 ? 12 : 14, 
+                Game1.createRadialDebris(currentLocation, o.ParentSheetIndex == (int) ChestInfo.Chest ? 12 : 14, 
                     (int) t.X, (int) t.Y, 4, false);
                 
                 currentLocation.Objects.Remove(t);
@@ -143,7 +147,7 @@ namespace PlacementPlus
                 modState.currentPlayer.reduceActiveItemByOne();
             };
             
-            Func<Vector2, bool> preliminaryChecks   = t => {
+            Func<Vector2, bool> preliminaryChecks  = t => {
                 // * Begin preliminary checks * //
                 var currentlyHeldItemNotNull = modState.currentlyHeldItem != null;
                 var isHoldingActionUseButton = e.Held.Any(button => button.IsActionButton() || button.IsUseToolButton());
@@ -155,8 +159,7 @@ namespace PlacementPlus
                        isHoldingActionUseButton             &&
                        isCursorInValidPosition;
             };
-
-            // TODO: ALLOW REPLACEMENT FOR OLD FENCES WITH NEW FENCES
+            
             if (!preliminaryChecks(e.Cursor.Tile)) return; // Preliminary checks
 
             // * Flooring checks * //
@@ -165,13 +168,11 @@ namespace PlacementPlus
             var isHoldingFlooring      = modState.currentlyHeldItem.category.Value == Object.furnitureCategory;
 
             // * Chest checks * //
-            // ParentSheetIndex = 130 -> Wooden Chest, ParentSheetIndex = 232 -> Stone Chest
             var objectAtTile           = modState.currentPlayer.currentLocation.getObjectAtTile((int) e.Cursor.Tile.X, 
                                                                                                 (int) e.Cursor.Tile.Y);
             var objectAtTileIsChest    = objectAtTile != null &&
-                                         objectAtTile.ParentSheetIndex != modState.currentlyHeldItem.ParentSheetIndex && 
-                                         new [] { 130, 232 }.Contains(objectAtTile.ParentSheetIndex);
-            var isHoldingChest         = new [] { 130, 232 }.Contains(modState.currentlyHeldItem.ParentSheetIndex);
+                                         new [] { (int) ChestInfo.Chest, (int) ChestInfo.Stone_chest }.Contains(objectAtTile.ParentSheetIndex);
+            var isHoldingChest         = new [] { (int) ChestInfo.Chest, (int) ChestInfo.Stone_chest }.Contains(modState.currentlyHeldItem.ParentSheetIndex);
 
             if (tileAtCursorIsFlooring && isHoldingFlooring)
                 swapFlooring(modState.currentlyHeldItem, modState.tileAtPlayerCursor);
@@ -181,7 +182,9 @@ namespace PlacementPlus
             modState.timeSinceLastPlacement = 0;
         }
 
-        // Struct to allow for other mod classes to interact with entry class data
+        
+        
+        // struct to allow for other mod classes to interact with entry class data
         internal struct ModState
         {
             internal int     timeSinceLastPlacement;
@@ -189,6 +192,13 @@ namespace PlacementPlus
             internal Vector2 tileAtPlayerCursor;
             internal Item    currentlyHeldItem;
             internal NetVector2Dictionary<TerrainFeature,NetRef<TerrainFeature>> currentTerrainFeatures;
+        }
+        
+        // enum to link chest name with respective parentSheetIndex
+        internal enum ChestInfo
+        {
+            Chest       = 130, // Wooden* chest
+            Stone_chest = 232  // Stone chest
         }
     }
 }

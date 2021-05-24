@@ -27,15 +27,8 @@ namespace PlacementPlus.Patches
         {
             try
             {
-                Func<Vector2, bool> preliminaryChecks = t => {
-                    // * Begin preliminary checks * //
-                    var itemIsFlooring          = item.category.Value == Object.furnitureCategory;
-                    var isCursorInValidPosition = Utility.tileWithinRadiusOfPlayer((int) t.X, (int) t.Y, 1, f);
-
-                    return itemIsFlooring && isCursorInValidPosition;
-                };
-
-                Func<Vector2, bool> objectAndTileChecks = t => {
+                Func<Vector2, bool> flooringTileChecks = t => {
+                    // * Begin flooring tile checks * //
                     var tileIsFlooring = location.terrainFeatures.ContainsKey(t) &&
                                          location.terrainFeatures[t] is Flooring;
 
@@ -45,11 +38,21 @@ namespace PlacementPlus.Patches
                     return tileIsFlooring || tileHasObject;
                 };
                 
-                Func<Vector2, Farm, bool> farmChecks = (t, l) => {
+                Func<Vector2, bool> chestTileChecks = t => {
+                    // * Begin chest tile checks * //
+                    var objectAtTile        = location.getObjectAtTile((int) t.X, (int) t.Y);
+                    var objectAtTileIsChest = objectAtTile != null && new [] { (int) PlacementPlus.ChestInfo.Chest,
+                                                                               (int) PlacementPlus.ChestInfo.Stone_chest 
+                                                                             }.Contains(objectAtTile.ParentSheetIndex);
+
+                    return objectAtTileIsChest;
+                };
+                
+                Func<Vector2, Farm, bool> farmChecks    = (t, l) => {
                     // * Begin Farm checks * //
                     var tileIsMailbox       = new[] { new Point((int) t.X, (int) t.Y), 
-                                                      new Point((int) t.X, (int) t.Y + 1) }
-                                              .Contains(l.GetMainMailboxPosition());
+                                                      new Point((int) t.X, (int) t.Y + 1) 
+                                                    }.Contains(l.GetMainMailboxPosition());
 
                     // Also ensure that the player is not on a walkable tile in the house location.
                     var tileIntersectsHouse =  l.GetHouseRect().Contains((int) t.X, (int) t.Y) &&
@@ -62,8 +65,7 @@ namespace PlacementPlus.Patches
                 Func<Vector2, BuildableGameLocation, bool> buildableGameLocationChecks = (t, l) => {
                     // * Begin BuildableGameLocation checks * //
                     var tileIntersectsBuilding = l.buildings.Any(b => b.occupiesTile(t) || b.doesTileHaveProperty(
-                                                                          (int) t.X, (int) t.Y, "Mailbox", 
-                                                                          "Buildings", ref _));
+                                                    (int) t.X, (int) t.Y, "Mailbox", "Buildings", ref _));
 
                     if (tileIntersectsBuilding) 
                         return true;
@@ -73,12 +75,21 @@ namespace PlacementPlus.Patches
                 // * Begin Postfix * //
                 var targetTile = new Vector2((float) x / 64, (float) y / 64);
 
-                if (!preliminaryChecks(targetTile)) return; // Run original logic.
-
-                if (!(location is BuildableGameLocation gl        && 
-                      buildableGameLocationChecks(targetTile, gl) ||
-                      objectAndTileChecks(targetTile))
-                ) return; // Run original logic.
+                // * Begin preliminary checks * //
+                // If the targetTile is not in a valid placement position, run original logic.
+                if (!Utility.tileWithinRadiusOfPlayer((int) targetTile.X, (int) targetTile.Y, 1, f)) return;
+                
+                var itemIsFlooring          = item.category.Value == Object.furnitureCategory;
+                var itemIsChest             = new [] { (int) PlacementPlus.ChestInfo.Chest, 
+                                                       (int) PlacementPlus.ChestInfo.Stone_chest
+                                                     }.Contains(item.ParentSheetIndex);
+                
+                if (!(location is BuildableGameLocation gl && (itemIsFlooring || itemIsChest))) return; // Run original logic.
+                
+                // If any subsequent checks fail, run original logic.
+                if (itemIsFlooring && !(buildableGameLocationChecks(targetTile, gl) || flooringTileChecks(targetTile)) ||
+                    itemIsChest    && !chestTileChecks(targetTile)
+                ) return;
 
                 __result = true; // Original method will now return true.
             } catch (Exception e) {

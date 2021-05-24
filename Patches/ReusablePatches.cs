@@ -25,7 +25,7 @@ namespace PlacementPlus.Patches
         [SuppressMessage("ReSharper", "ConvertToLocalFunction")]
         private static IEnumerable<MethodBase> TargetMethods()
         {
-            // Lambda to get MethodInfo for each overwritten CheckForAction() in subclasses StardewValley.Object
+            // Get MethodInfo for each overwritten CheckForAction() in subclasses StardewValley.Object
             Func<IEnumerable<MethodBase>> checkForActionIEnumerable = () => {
                 // * Begin checkForActionIEnumerable * //
                 return Assembly.Load("Stardew Valley").GetTypes()
@@ -42,6 +42,8 @@ namespace PlacementPlus.Patches
             });
         }
 
+        
+        
         private static bool Prefix(ref bool __result)
         {
             try 
