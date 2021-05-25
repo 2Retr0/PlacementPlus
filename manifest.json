@@ -2,7 +2,7 @@
   "Name":              "Placement Plus",
   "Author":            "2Retr0",
   "Version":           "1.0.0",
-  "Description":       "Swap any pathing or furnishing of equal size!",
+  "Description":       "Vastly broadens where objects and buildings can be placed!",
   "UniqueID":          "2Retr0.PlacementPlus",
   "EntryDll":          "PlacementPlus.dll",
   "MinimumApiVersion": "3.0.0",
