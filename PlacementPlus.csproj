@@ -45,6 +45,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Patches\ObjectPatches.cs" />
     <Compile Include="PlacementPlus.cs" />
     <Compile Include="Patches\BuildableGameLocationPatches.cs" />
     <Compile Include="Patches\ReusablePatches.cs" />
