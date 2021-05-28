@@ -57,11 +57,13 @@ namespace PlacementPlus
         *********/
         public override void Entry(IModHelper helper)
         {
-            var harmony = HarmonyInstance.Create(ModManifest.UniqueID); harmony.PatchAll();
+            // Initialize static instance first as Harmony patches rely on it.
             Instance = this;
             
             // Ensure that modState.tileAtPlayerCursor is initialized for patches
             modState.tileAtPlayerCursor = new Vector2();
+            
+            var harmony = HarmonyInstance.Create(ModManifest.UniqueID); harmony.PatchAll();
 
             // We keep track of the time since the player last placed any flooring to counteract input spam.
             // TODO: THIS IS REALLY HACKY BUT I DUNNO HOW ELSE TO DO IT
@@ -91,9 +93,9 @@ namespace PlacementPlus
             return flooringItem.ParentSheetIndex.Equals(
                 TILE_ID_TO_ITEM[((Flooring) modState.currentTerrainFeatures[flooringTile]).whichFloor]);
         }
+ 
 
 
-        
         /*********
         ** Private methods
         *********/
