@@ -20,7 +20,7 @@ Download the latest version over at [NexusMods](https://www.nexusmods.com/starde
 ## Install
 1. [Install the latest version of SMAPI](https://smapi.io).
 2. Download this mod at [NexusMods](https://www.nexusmods.com/stardewvalley/mods/8798), or [CurseForge]() and unzip it into `Stardew Valley/Mods`
-  * This mod can also be found here! On the [releases](https://github.com/2Retr0/PlacementPlus/releases) tab.
+   * This mod can also be found here! On the [releases](https://github.com/2Retr0/PlacementPlus/releases) tab.
 3. Run the game using SMAPI.
 
 ## Compatibility
