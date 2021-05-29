@@ -24,7 +24,8 @@ Download the latest version over at [NexusMods](https://www.nexusmods.com/starde
 3. Run the game using SMAPI.
 
 ## Compatibility
-* Works with Stardew Valley 1.5 on Windows (Untested on Linux/Mac)
+* Works with Stardew Valley 1.5 on Windows.
+   * Untested on Linux/Mac but should function fine.
 * Works in single player and multiplayer.
 
 ## See also
