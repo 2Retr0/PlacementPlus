@@ -1,7 +1,6 @@
 ﻿#region
 
 using System;
-using System.Diagnostics.CodeAnalysis;
 using Harmony;
 using Microsoft.Xna.Framework;
 using StardewModdingAPI;
@@ -18,8 +17,7 @@ namespace PlacementPlus.Patches
     internal class BuildableGameLocationPatches_IsBuildable
     {
         private static IMonitor Monitor => PlacementPlus.Instance.Monitor;
-
-        [SuppressMessage("ReSharper", "SuggestBaseTypeForParameter")]
+        
         private static void Postfix(Vector2 tileLocation, BuildableGameLocation __instance, ref bool __result)
         {
             try
