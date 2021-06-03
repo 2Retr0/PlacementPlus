@@ -1,6 +1,7 @@
-﻿using System;
+﻿#region
+
+using System;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
@@ -8,7 +9,8 @@ using Harmony;
 using StardewModdingAPI;
 using StardewValley;
 using Object = StardewValley.Object;
-using ChestInfo = PlacementPlus.PlacementPlus.ChestInfo;
+
+#endregion
 
 namespace PlacementPlus.Patches
 {
@@ -20,17 +22,14 @@ namespace PlacementPlus.Patches
         private static readonly FieldInfo contentFI              = AccessTools.Field(typeof(Game1),  nameof(Game1.content));
         private static readonly MethodInfo objectAtTileIsChestMI = AccessTools.Method(typeof(ObjectPatches_PlacementAction), nameof(ObjectAtTileIsChest));
         
+        // We assume that x and y are raw coordinates and not tile coordinates...
+        // We also assume that it has already been asserted that the Object at tile is not null...
         private static bool ObjectAtTileIsChest(GameLocation location, int x, int y)
         {
-            // Assuming that x and y are raw coordinates and not tile coordinates...
-            // Assuming that it has already been asserted that the Object at tile is not null...
             var objectAtTile = location.getObjectAtTile(x / 64, y / 64);
-            return new [] { (int) ChestInfo.Chest, 
-                            (int) ChestInfo.Stone_chest 
-                          }.Contains(objectAtTile.ParentSheetIndex);
+            return PlacementPlus.CHEST_INFO_LIST.Contains(objectAtTile.ParentSheetIndex);
         }
-
-        [SuppressMessage("ReSharper", "CommentTypo")]
+        
         private static IEnumerable<CodeInstruction> Transpiler(IEnumerable<CodeInstruction> instructions, ILGenerator ilGenerator)
         {
             var code           = new List<CodeInstruction>(instructions);
