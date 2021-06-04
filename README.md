@@ -3,7 +3,7 @@
 ## Description 
 Annoyed by how restricted placing objects can be sometimes in Stardew Valley? This mod introduces some very convenient quality-of-life placement mechanics—specifically...
 
-![img](https://www.hoiunitedway.org/wp-content/uploads/banner-large.jpg)  
+![img](https://i.imgur.com/Os76cC4.gif)  
 **Being able to swap flooring without needing to break them!** *(Inspired by the very useful block swap feature from Terraria).*
 
 ![img](https://www.hoiunitedway.org/wp-content/uploads/banner-large.jpg)  
@@ -37,3 +37,4 @@ Download the latest version over at [NexusMods](https://www.nexusmods.com/starde
 * Mods used in image previews:
    * [Vibrant Pastoral Recolor](https://www.nexusmods.com/stardewvalley/mods/6367?tab=description)
    * [Simple Foliage](https://www.nexusmods.com/stardewvalley/mods/8164)
+   * [Twiistrz New Paths](https://www.nexusmods.com/stardewvalley/mods/3309)
