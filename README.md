@@ -13,7 +13,7 @@ Annoyed by how restricted placing objects can be sometimes in Stardew Valley? Th
 **Additionally, being able to swap chests!** *(Works between stone and wooden chests!)* 
 
 ![img](https://www.hoiunitedway.org/wp-content/uploads/banner-large.jpg)  
-**Swapping fences works too!** *(Gates, iron, hardwood, they all work!)* 
+**Swapping fences works too!** *(Gates, iron, hardwood—you name it!)* 
 
 ![img](https://i.imgur.com/JULHymr.gif)  
 **Unrestricted building on any walkable tile!** *(Yes, you can trap yourself if you tried.)*
