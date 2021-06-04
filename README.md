@@ -29,8 +29,8 @@ Download the latest version over at [NexusMods](https://www.nexusmods.com/starde
 * Works in single player and multiplayer.
 
 ## See also
-* Mods used in image previews:
-   * ([NexusMods](https://www.nexusmods.com/stardewvalley/mods/6367?tab=description)) Vibrant Pastoral Recolor
-   * ([NexusMods](https://www.nexusmods.com/stardewvalley/mods/8164)) Simple Foliage 
 * [Official discussion thread](https://www.nexusmods.com/stardewvalley/mods/8798?tab=posts)
 * [Release notes](https://github.com/2Retr0/PlacementPlus/releases)
+* **Mods used in image previews:**
+   * ([NexusMods](https://www.nexusmods.com/stardewvalley/mods/6367?tab=description)) *Vibrant Pastoral Recolor*
+   * ([NexusMods](https://www.nexusmods.com/stardewvalley/mods/8164)) *Simple Foliage *
