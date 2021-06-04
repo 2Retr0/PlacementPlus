@@ -3,7 +3,7 @@
 ## Description 
 Annoyed by how restricted placing objects can be sometimes in Stardew Valley? This mod introduces some very convenient quality-of-life placement mechanics—specifically...
 
-![img](https://i.imgur.com/Os76cC4.gif)  
+![img](https://i.imgur.com/OrsIN50.gif)  
 **Being able to swap flooring without needing to break them!** *(Inspired by the very useful block swap feature from Terraria).*
 
 ![img](https://www.hoiunitedway.org/wp-content/uploads/banner-large.jpg)  
