@@ -9,7 +9,7 @@ Annoyed by how restricted placing objects can be sometimes in Stardew Valley? Th
 ![img](https://www.hoiunitedway.org/wp-content/uploads/banner-large.jpg)  
 **Flooring can now also be placed under any object!** *(This includes under buildings, shipping bins, and those pesky mailboxes!)*
 
-![img](https://i.imgur.com/6UAoWhO.gif)  
+![img](https://i.imgur.com/lICanqm.gif)  
 **Additionally, being able to swap chests!** *(Works between stone and wooden chests!)* 
 
 ![img](https://i.imgur.com/O1BUDs6.gif)  
