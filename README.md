@@ -1,4 +1,4 @@
-# PlacementPlus
+# **PlacementPlus**
 
 ## Description 
 Annoyed by how restricted placing objects can be sometimes in Stardew Valley? This mod introduces some very convenient quality-of-life placement mechanics—specifically...
