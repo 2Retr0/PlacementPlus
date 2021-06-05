@@ -129,7 +129,7 @@ namespace PlacementPlus
                     if (modState.objectAtTile != null && ReusablePatches_SkipMethod.OBJECT_SUBCLASSES.Contains(modState.objectAtTile.GetType()))
                     {
                         // If the Object is not a torch or the Object (as a Fence) is a gate.
-                        if (modState.objectAtTile.GetType() != typeof(Torch) &&
+                        if (modState.objectAtTile.GetType() != typeof(Torch) ||
                             modState.objectAtTile.GetType() == typeof(Fence) &&
                             (modState.objectAtTile as Fence).isGate)
                         {
@@ -230,7 +230,7 @@ namespace PlacementPlus
 
                 return (modState.isHoldingUseToolButton || modState.isHoldingActionButton) &&
                        modState.timeSinceLastPlacement > validLastPlacementTime            &&
-                       modState.currentPlayer.CanMove &&
+                       modState.currentPlayer.CanMove && // TODO: THIS DOES NOT WORK SINCE PLAYER CAN MOVE AFTER CLICKING AND TILE IS STILL REPLACED
                        currentlyHeldItemNotNull       && 
                        isCursorInValidPosition;
             };
