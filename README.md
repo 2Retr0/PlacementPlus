@@ -18,11 +18,11 @@ Annoyed by how restricted placing objects can be sometimes in Stardew Valley? Th
 ![img](https://i.imgur.com/JULHymr.gif)  
 **Unrestricted building on any walkable tile!** *(Yes, you can trap yourself if you tried.)*
 
-Download the latest version over at [NexusMods](https://www.nexusmods.com/stardewvalley/mods/8798), or [CurseForge]()!
+Download the latest version over at [NexusMods](https://www.nexusmods.com/stardewvalley/mods/8798), or [CurseForge](https://www.curseforge.com/stardewvalley/mods/placementplus)!
 
 ## Install
 1. [Install the latest version of SMAPI](https://smapi.io).
-2. Download this mod at [NexusMods](https://www.nexusmods.com/stardewvalley/mods/8798), or [CurseForge]() and unzip it into `Stardew Valley/Mods`
+2. Download this mod at [NexusMods](https://www.nexusmods.com/stardewvalley/mods/8798), or [CurseForge](https://www.curseforge.com/stardewvalley/mods/placementplus) and unzip it into `Stardew Valley/Mods`
    * This mod can also be found right here!—specifically on the [releases](https://github.com/2Retr0/PlacementPlus/releases) tab.
 3. Run the game using SMAPI.
 
