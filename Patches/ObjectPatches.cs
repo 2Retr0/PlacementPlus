@@ -78,7 +78,9 @@ namespace PlacementPlus.Patches
                         || IsItemGate(__instance)) 
                     { return false; }
 
-                    
+                    // Before destroying the fence, check if there was a torch.
+                    var hadTorch = fence.heldObject.Value is Torch;
+
                     // We must use the correct tool to destroy the fence as if the fence has been converted to a gate,
                     // it needs to drop the gate as well as the original fence.
                     var usePickaxe = fence.QualifiedItemId is FenceType.Stone_fence or FenceType.Iron_fence;
@@ -86,7 +88,7 @@ namespace PlacementPlus.Patches
                 
                     __instance.placementAction(location, x, y);
                     // Ensure that if the original fence has a torch, it is preserved.
-                    if (fence.heldObject.Value is Torch) tileObject.heldObject.Value = new Torch();
+                    if (hadTorch) location.getObjectAt(x, y).heldObject.Value = new Torch();
 
                     return true;
                 }
