@@ -61,7 +61,6 @@ namespace PlacementPlus.Patches
                     
                     terrainFeatures.Add(tilePos, new Flooring(FlooringInfoMap[__instance.QualifiedItemId]));
 
-                    who.reduceActiveItemByOne();
                     return true;
                 }
                 
@@ -89,7 +88,6 @@ namespace PlacementPlus.Patches
                     // Ensure that if the original fence has a torch, it is preserved.
                     if (fence.heldObject.Value is Torch) tileObject.heldObject.Value = new Torch();
 
-                    who.reduceActiveItemByOne();
                     return true;
                 }
 
