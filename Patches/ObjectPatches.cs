@@ -65,34 +65,6 @@ namespace PlacementPlus.Patches
                     return true;
                 }
                 
-                bool SwapChest(Chest chest) 
-                {
-                    // Do not swap if the player is not holding the use tool button (we want their inventory to still be
-                    // accessible).
-                    if (!holdingToolButton) return false;
-                    
-                    
-                    var chestToPlace = new Chest(true, tilePos, __instance.ParentSheetIndex) {
-                        shakeTimer        = 100,
-                        playerChoiceColor = { Value = chest.playerChoiceColor.Value } };
-                    chestToPlace.items.Set(chest.items); // Fill the new chest with the items of the old chest.
-
-                    var isWoodenChest = chest.ParentSheetIndex == (int) ChestType.Chest;
-                    // We clear out the chest's inventory before simulating its destruction.
-                    chest.items.Clear(); chest.clearNulls();
-                    location.debris.Add(new Debris(-chest.ParentSheetIndex, new Vector2(x + 32, y + 32), who.Position));
-                    location.playSound(isWoodenChest ? "axe" : "hammer");
-                    
-                    // Spawning broken particles to simulate chest breaking.
-                    Game1.createRadialDebris(location, isWoodenChest ? 12 : 14, 64 * x, 64 * y, 4, false);
-                    location.Objects.Remove(tilePos);
-                    
-                    location.Objects.Add(tilePos, chestToPlace);
-
-                    who.reduceActiveItemByOne();
-                    return true;
-                }
-                
                 bool SwapFence(Fence fence) 
                 {
                     // We do not swap if:
@@ -125,11 +97,6 @@ namespace PlacementPlus.Patches
                 
                 if (IsItemFlooring(__instance) && DoesTileHaveFlooring(terrainFeatures, tilePos))
                     __result = SwapFlooring((Flooring) terrainFeatures[tilePos]);
-                else if (IsItemChest(__instance) && IsItemChest(tileObject))
-                    // We still skip the original logic if the chests are equal as to prevent the 'Unsuitable Location'
-                    // dialogue from appearing when trying to place a chest where a chest already exists.
-                    __result = __instance.ParentSheetIndex == tileObject.ParentSheetIndex || 
-                               SwapChest(tileObject as Chest);
                 else if (IsItemFence(__instance) && IsItemFence(tileObject))
                     __result = SwapFence(tileObject as Fence);
 

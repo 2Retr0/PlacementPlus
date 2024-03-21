@@ -45,14 +45,6 @@ namespace PlacementPlus.Utility
             { (int) FenceType.Gate,           325 },
             { (int) FenceType.Hardwood_fence, 298 },
         };
-        
-        // enum mapping to chest types.
-        public enum ChestType { Chest, Stone_chest, }
-        // Bi-directional mapping between chest types and their respective item's ParentSheetIndex.
-        public static readonly BiDictionary<int> ChestInfoMap = new()
-        {
-            { (int) ChestType.Chest,       130 },
-            { (int) ChestType.Stone_chest, 232 },
         };
 
 
@@ -80,12 +72,6 @@ namespace PlacementPlus.Utility
         /// <summary> Returns <c>true</c> if <c>item</c> is the target flooring; otherwise, <c>false</c>. </summary>
         public static bool IsItemTargetFlooring(Item item, Flooring flooring) =>
             item.ParentSheetIndex == FlooringInfoMap[flooring.whichFloor.Value];
-        
-
-
-        /// <summary> Returns <c>true</c> if <c>item</c> is a chest; otherwise, <c>false</c>. </summary>
-        public static bool IsItemChest(Item item) =>
-            item != null && ChestInfoMap.ContainsKey(item.ParentSheetIndex);
 
 
 
