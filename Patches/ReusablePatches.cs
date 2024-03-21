@@ -34,8 +34,14 @@ namespace PlacementPlus.Patches
                 .Select(m => m.GetMethod(nameof(Building.doAction)));
 
             // Combining all gathered target MethodInfo entries with some additional ones.
+
             return checkForActionEnumerable.Concat(doActionEnumerable).Concat(new [] {
-                AccessTools.Method(typeof(GameLocation), nameof(GameLocation.performAction)), 
+                AccessTools.Method(typeof(GameLocation), nameof(GameLocation.performAction), new Type[] {
+                    typeof(string), typeof(Farmer), typeof(xTile.Dimensions.Location)
+                }),
+                AccessTools.Method(typeof(GameLocation), nameof(GameLocation.performAction), new Type[] {
+                    typeof(string[]), typeof(Farmer), typeof(xTile.Dimensions.Location)
+                }),
                 AccessTools.Method(typeof(ShippingBin), nameof(ShippingBin.leftClicked)),
             });
         }
