@@ -4,55 +4,42 @@ using StardewValley;
 using StardewValley.Buildings;
 using StardewValley.Network;
 using StardewValley.TerrainFeatures;
-
+using System.Collections.Generic;
 using Object = StardewValley.Object;
 
 namespace PlacementPlus.Utility
 {
-    public static class Utility
-    {
-        // enum mapping to flooring types--the order represented matters! 
-        public enum FlooringType 
-        { 
-            Wood_floor, Stone_floor, Weathered_floor, Crystal_floor, Straw_floor, Gravel_floor, Rustic_plank_floor, 
-            Crystal_path, Cobblestone_path, Stepping_stone_path, Brick_floor, Wood_path, Stone_walkway_floor,
-        }
-        // Bi-directional mapping between flooring types and their respective item's ParentSheetIndex.
-        public static readonly BiDictionary<int> FlooringInfoMap = new() {
-            { (int) FlooringType.Wood_floor,          328 },
-            { (int) FlooringType.Stone_floor,         329 },
-            { (int) FlooringType.Weathered_floor,     331 },
-            { (int) FlooringType.Crystal_floor,       333 },
-            { (int) FlooringType.Straw_floor,         401 },
-            { (int) FlooringType.Gravel_floor,        407 },
-            { (int) FlooringType.Rustic_plank_floor,  405 },
-            { (int) FlooringType.Crystal_path,        409 },
-            { (int) FlooringType.Cobblestone_path,    411 },
-            { (int) FlooringType.Stepping_stone_path, 415 },
-            { (int) FlooringType.Brick_floor,         293 },
-            { (int) FlooringType.Wood_path,           840 },
-            { (int) FlooringType.Stone_walkway_floor, 841 },
+    public static class Utility {
+        // Bi-directional mapping between flooring types and their respective item's qualified item id.
+        // Note that the flooring itself would instead use ItemRegistry.type_floorpaper (FL).
+        public static readonly BiDictionary<string> FlooringInfoMap = new() {
+            { Flooring.wood,                "(O)328" },
+            { Flooring.stone,               "(O)329" },
+            { Flooring.ghost,               "(O)331" },
+            { Flooring.iceTile,             "(O)333" },
+            { Flooring.straw,               "(O)401" },
+            { Flooring.gravel,              "(O)407" },
+            { Flooring.boardwalk,           "(O)405" },
+            { Flooring.colored_cobblestone, "(O)409" },
+            { Flooring.cobblestone,         "(O)411" },
+            { Flooring.steppingStone,       "(O)415" },
+            { Flooring.brick,               "(O)293" },
+            { Flooring.plankFlooring,       "(O)840" },
+            { Flooring.townFlooring,        "(O)841" },
         };
 
-        // enum mapping to fence types--the order represented matters! 
-        public enum FenceType { Wood_fence = 1, Stone_fence, Iron_fence, Gate, Hardwood_fence, }
-        // Bi-directional mapping between fence types and their respective item's ParentSheetIndex.
-        public static readonly BiDictionary<int> FenceInfoMap = new()
-        {
-            { (int) FenceType.Wood_fence,     322 },
-            { (int) FenceType.Stone_fence,    323 },
-            { (int) FenceType.Iron_fence,     324 },
-            { (int) FenceType.Gate,           325 },
-            { (int) FenceType.Hardwood_fence, 298 },
-        };
-        
-        // enum mapping to chest types.
-        public enum ChestType { Chest, Stone_chest, }
-        // Bi-directional mapping between chest types and their respective item's ParentSheetIndex.
-        public static readonly BiDictionary<int> ChestInfoMap = new()
-        {
-            { (int) ChestType.Chest,       130 },
-            { (int) ChestType.Stone_chest, 232 },
+
+
+        // Qualified IDs for fence items.
+        public static class FenceType {
+            public const string Wood_fence     = "(O)322";
+            public const string Stone_fence    = "(O)323";
+            public const string Iron_fence     = "(O)324";
+            public const string Gate           = "(O)325";
+            public const string Hardwood_fence = "(O)298";
+        }
+        public static readonly HashSet<string> FenceTypes = new() {
+            FenceType.Wood_fence, FenceType.Stone_fence, FenceType.Iron_fence, FenceType.Gate, FenceType.Hardwood_fence,
         };
 
 
@@ -70,39 +57,28 @@ namespace PlacementPlus.Utility
 
 
         /// <summary> Returns <c>true</c> if <c>item</c> is flooring; otherwise, <c>false</c>. </summary>
-        // ? Does the furniture category only cover flooring?
         public static bool IsItemFlooring(Item item) =>
-            item.Category == Object.furnitureCategory;
+            item != null && FlooringInfoMap.ContainsKey(item.QualifiedItemId);
         
 
-        
         
         /// <summary> Returns <c>true</c> if <c>item</c> is the target flooring; otherwise, <c>false</c>. </summary>
         public static bool IsItemTargetFlooring(Item item, Flooring flooring) =>
-            item.ParentSheetIndex == FlooringInfoMap[flooring.whichFloor.Value];
-        
-
-
-        /// <summary> Returns <c>true</c> if <c>item</c> is a chest; otherwise, <c>false</c>. </summary>
-        public static bool IsItemChest(Item item) =>
-            item != null && ChestInfoMap.ContainsKey(item.ParentSheetIndex);
+            item != null && item.QualifiedItemId == FlooringInfoMap[flooring.whichFloor.Value];
 
 
 
         /// <summary> Returns <c>true</c> if <c>item</c> is a fence gate; otherwise, <c>false</c>. </summary>
         // We either cast the item as Fence and check if it's a gate (for Objects), or compare the item's
         // ParentSheetIndex with the index for gates (for Items).
-        public static bool IsItemGate(Item item)
-        {
-            return item != null && 
-                   ((item as Fence)?.isGate.Value ?? item.ParentSheetIndex == FenceInfoMap[(int)FenceType.Gate]);
-        }
+        public static bool IsItemGate(Item item) => item != null &&
+            ((item as Fence)?.isGate.Value ?? item.QualifiedItemId == FenceType.Gate);
 
 
 
         /// <summary> Returns <c>true</c> if <c>item</c> is a fence; otherwise, <c>false</c>. </summary>
         public static bool IsItemFence(Item item) =>
-            item != null && (FenceInfoMap.ContainsKey(item.ParentSheetIndex) || item is Fence);
+            item != null && (FenceTypes.Contains(item.QualifiedItemId) || item is Fence);
         
         
         
@@ -158,9 +134,9 @@ namespace PlacementPlus.Utility
             
 
             var building = farm.getBuildingAt(tilePos);
-            
+
             // If there is no building at the tile, check if the tile intersects the edge of the main farmhouse.
-            if (building == null) return IntersectsRectEdge(farm.GetHouseRect(), tilePos);
+            building ??= farm.GetMainFarmHouse();
             
             // Check if the tile intersects the edge of the building.
             var buildingRect = new Rectangle(
