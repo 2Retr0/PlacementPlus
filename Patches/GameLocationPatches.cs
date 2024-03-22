@@ -25,7 +25,7 @@ namespace PlacementPlus.Patches
                 var tileIsPassable = __instance.isTilePassable(location, Game1.viewport);
                 var tileHasNoFurniture = __instance.GetFurnitureAt(tileLocation) == null;
 
-                __result = playerIsNotOnTile && tileIsNotOccupied && tileIsPassable && tileHasNoFurniture;
+                __result |= playerIsNotOnTile && tileIsNotOccupied && tileIsPassable && tileHasNoFurniture;
             }
             catch (Exception e) {
                 Monitor.Log($"Failed in {nameof(GameLocationPatches)}:\n{e}", LogLevel.Error);
