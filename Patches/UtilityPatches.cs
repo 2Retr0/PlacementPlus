@@ -36,8 +36,6 @@ namespace PlacementPlus.Patches
                     __result = tileObject != null || 
                                (location is Farm farm && (IsTileOnBuildingEdge(farm, tilePos) || 
                                                           DoesTileHaveMainMailbox(farm, tilePos)));
-                else if (IsItemChest(item))
-                    __result = IsItemChest(tileObject);
                 else if (IsItemFence(item))
                     __result = IsItemFence(tileObject);
             } catch (Exception e) {

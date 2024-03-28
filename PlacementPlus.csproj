@@ -2,8 +2,8 @@
     <PropertyGroup>
         <AssemblyName>PlacementPlus</AssemblyName>
         <RootNamespace>PlacementPlus</RootNamespace>
-        <Version>1.2.0</Version>
-        <TargetFramework>net5.0</TargetFramework>
+        <Version>2.0.1-unofficial</Version>
+        <TargetFramework>net6.0</TargetFramework>
         <EnableHarmony>true</EnableHarmony>
     </PropertyGroup>
 
