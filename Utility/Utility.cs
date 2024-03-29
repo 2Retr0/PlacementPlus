@@ -5,7 +5,6 @@ using StardewValley.Buildings;
 using StardewValley.Network;
 using StardewValley.TerrainFeatures;
 using System.Collections.Generic;
-using Object = StardewValley.Object;
 
 namespace PlacementPlus.Utility
 {
@@ -28,18 +27,17 @@ namespace PlacementPlus.Utility
             { Flooring.townFlooring,        "(O)841" },
         };
 
-
-
         // Qualified IDs for fence items.
         public static class FenceType {
-            public const string Wood_fence     = "(O)322";
-            public const string Stone_fence    = "(O)323";
-            public const string Iron_fence     = "(O)324";
-            public const string Gate           = "(O)325";
-            public const string Hardwood_fence = "(O)298";
+            public const string WoodFence     = "(O)322";
+            public const string StoneFence    = "(O)323";
+            public const string IronFence     = "(O)324";
+            public const string Gate          = "(O)325";
+            public const string HardwoodFence = "(O)298";
         }
-        public static readonly HashSet<string> FenceTypes = new() {
-            FenceType.Wood_fence, FenceType.Stone_fence, FenceType.Iron_fence, FenceType.Gate, FenceType.Hardwood_fence,
+
+        private static readonly HashSet<string> FenceTypes = new() {
+            FenceType.WoodFence, FenceType.StoneFence, FenceType.IronFence, FenceType.Gate, FenceType.HardwoodFence,
         };
 
 
@@ -104,16 +102,13 @@ namespace PlacementPlus.Utility
         {
             var _ = ""; // Throwaway variable for Building.doesTileHaveProperty reference argument.
             var tile = tilePos.ToPoint();
-
             var building = farm.getBuildingAt(tilePos);
-            
             // If there is no building at the tile, check if the tile intersects the main mailbox.
             if (building == null) return DoesTileHaveMainMailbox(farm, tilePos);
 
             // Check for cabin mailboxes/doors/shipping bins.
             var tileHasMailbox = building.doesTileHaveProperty(tile.X, tile.Y, "Mailbox", "Buildings", ref _);
-            var tileHasDoor = building.getPointForHumanDoor() == tile || 
-                              building.getRectForAnimalDoor().Contains(64 * tilePos);
+            var tileHasDoor = building.getPointForHumanDoor() == tile || building.getRectForAnimalDoor().Contains(64 * tilePos);
             var tileHasShippingBin = building is ShippingBin sb && sb.occupiesTile(tilePos);
 
             return tileHasMailbox || tileHasDoor || tileHasShippingBin;
@@ -126,22 +121,19 @@ namespace PlacementPlus.Utility
         /// </summary>
         public static bool IsTileOnBuildingEdge(Farm farm, Vector2 tilePos)
         {
+            var building = farm.getBuildingAt(tilePos);
+            // If there is no building at the tile, check if the tile intersects the edge of the main farmhouse.
+            building ??= farm.GetMainFarmHouse();
+            
+            // Check if the tile intersects the edge of the building.
+            var buildingRect = new Rectangle(building.tileX.Value, building.tileY.Value, building.tilesWide.Value, building.tilesHigh.Value);
+            return IntersectsRectEdge(buildingRect, tilePos);
+
             static bool IntersectsRectEdge(Rectangle rect, Vector2 tilePos)
             {
                 var innerRect = rect; innerRect.Inflate(-1, -1);
                 return rect.Contains(tilePos) && !innerRect.Contains(tilePos);
             }
-            
-
-            var building = farm.getBuildingAt(tilePos);
-
-            // If there is no building at the tile, check if the tile intersects the edge of the main farmhouse.
-            building ??= farm.GetMainFarmHouse();
-            
-            // Check if the tile intersects the edge of the building.
-            var buildingRect = new Rectangle(
-                building.tileX.Value, building.tileY.Value, building.tilesWide.Value, building.tilesHigh.Value);
-            return IntersectsRectEdge(buildingRect, tilePos);
         }
     }
 }

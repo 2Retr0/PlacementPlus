@@ -4,6 +4,7 @@ using static PlacementPlus.ModState;
 
 namespace PlacementPlus
 {
+    // ReSharper disable once ClassNeverInstantiated.Global
     public class PlacementPlus : Mod
     {
         // Static instance of entry class to allow for static mod classes (i.e. patch classes) to interact with entry class data.

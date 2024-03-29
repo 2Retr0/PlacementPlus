@@ -12,11 +12,11 @@ namespace PlacementPlus
     /// <summary> Static class holding and maintaining data used primarily in Harmony patches. </summary>
     public static class ModState
     {
-        internal static Vector2 cursorTile;
-        internal static Item    heldItem;
-        internal static bool    holdingToolButton;
-        internal static Object  tileObject;
-        internal static NetVector2Dictionary<TerrainFeature,NetRef<TerrainFeature>> terrainFeatures;
+        internal static Vector2 CursorTile;
+        internal static Item    HeldItem;
+        internal static bool    HoldingToolButton;
+        internal static Object  TileObject;
+        internal static NetVector2Dictionary<TerrainFeature,NetRef<TerrainFeature>> TerrainFeatures;
         internal static readonly IMonitor Monitor = PlacementPlus.Instance.Monitor;
         
         private static bool initialized;
@@ -32,13 +32,13 @@ namespace PlacementPlus
                 if (!Context.IsWorldReady) return;
                 
                 // Updating mod state fields.
-                terrainFeatures = Game1.player.currentLocation.terrainFeatures;
-                cursorTile = e.Cursor.Tile;
-                heldItem = Game1.player.CurrentItem;
+                TerrainFeatures = Game1.player.currentLocation.terrainFeatures;
+                CursorTile = e.Cursor.Tile;
+                HeldItem = Game1.player.CurrentItem;
 
-                holdingToolButton = e.Held.Any(button => button.IsUseToolButton()); // (i.e. left click)
+                HoldingToolButton = e.Held.Any(button => button.IsUseToolButton()); // (i.e. left click)
                 
-                tileObject = Game1.player.currentLocation.getObjectAtTile((int) e.Cursor.Tile.X, (int) e.Cursor.Tile.Y);
+                TileObject = Game1.player.currentLocation.getObjectAtTile((int) e.Cursor.Tile.X, (int) e.Cursor.Tile.Y);
             };
             initialized = true;
         }

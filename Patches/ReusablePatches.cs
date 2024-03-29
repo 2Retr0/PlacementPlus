@@ -34,7 +34,6 @@ namespace PlacementPlus.Patches
                 .Select(m => m.GetMethod(nameof(Building.doAction)));
 
             // Combining all gathered target MethodInfo entries with some additional ones.
-
             return checkForActionEnumerable.Concat(doActionEnumerable).Concat(new [] {
                 AccessTools.Method(typeof(GameLocation), nameof(GameLocation.performAction), new Type[] {
                     typeof(string), typeof(Farmer), typeof(xTile.Dimensions.Location)
@@ -58,18 +57,18 @@ namespace PlacementPlus.Patches
                 // Only do new checks if the player is holding the use tool button and is holding an item and the cursor
                 // tile is placeable. We must use 'didPlayerJustLeftClick()' as modState.holdingToolButton does not
                 // cover the initial button press.
-                var holdingToolButton = Game1.didPlayerJustLeftClick() || ModState.holdingToolButton;
-                if (!holdingToolButton || heldItem == null) return true; // Run original logic.
+                var holdingToolButton = Game1.didPlayerJustLeftClick() || HoldingToolButton;
+                if (!holdingToolButton || HeldItem == null) return true; // Run original logic.
                 
                 
-                var sameFlooring = DoesTileHaveFlooring(terrainFeatures, cursorTile) && 
-                                   IsItemTargetFlooring(heldItem, (Flooring) terrainFeatures[cursorTile]);
+                var sameFlooring = DoesTileHaveFlooring(TerrainFeatures, CursorTile) &&
+                                   IsItemTargetFlooring(HeldItem, (Flooring) TerrainFeatures[CursorTile]);
                 // For fences, we allow interaction if the player is not holding a fence/flooring OR the player-held 
                 // item is the same as the tile fence/flooring respectively.
                 if (__originalMethod.DeclaringType == typeof(Fence))
                 {
-                    var sameFences = tileObject is Fence fence && IsItemTargetFence(heldItem, fence);
-                    __result = !(IsItemFlooring(heldItem) || IsItemFence(heldItem)) 
+                    var sameFences = TileObject is Fence fence && IsItemTargetFence(HeldItem, fence);
+                    __result = !(IsItemFlooring(HeldItem) || IsItemFence(HeldItem))
                                || sameFlooring 
                                || sameFences;
                 }
@@ -77,7 +76,7 @@ namespace PlacementPlus.Patches
                 // tile flooring.
                 else
                 {
-                    __result = !IsItemFlooring(heldItem) || sameFlooring;
+                    __result = !IsItemFlooring(HeldItem) || sameFlooring;
                 }
                 
                 return __result; // Run original logic if it was determined that the action *should* occur.

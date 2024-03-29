@@ -4,7 +4,6 @@ using HarmonyLib;
 using Microsoft.Xna.Framework;
 using StardewModdingAPI;
 using StardewValley;
-using StardewValley.Objects;
 using StardewValley.TerrainFeatures;
 using StardewValley.Tools;
 
@@ -20,8 +19,6 @@ namespace PlacementPlus.Patches
     {
         /// <summary>
         /// Adds additional logic when attempting to place an object to determine if some tile object should be swapped.
-        /// Additionally prevents the appearance of the 'Unsuitable Location' dialogue when attempting to place a chest
-        /// where a chest already exists.
         /// </summary>
         [SuppressMessage("ReSharper", "PossibleLossOfFraction")]
         private static bool Prefix(GameLocation location, int x, int y, Farmer who, ref bool __result, Object __instance)
@@ -31,40 +28,16 @@ namespace PlacementPlus.Patches
                 var tilePos = new Vector2(x / 64, y / 64);
                 var tileObject = location.getObjectAt(x, y);
                 var terrainFeatures = location.terrainFeatures; 
-                var holdingToolButton = Game1.didPlayerJustLeftClick() || ModState.holdingToolButton;
+                var holdingToolButton = Game1.didPlayerJustLeftClick() || HoldingToolButton;
 
-                bool SwapFlooring(Flooring flooring) 
-                {
-                    bool tileHasInteractable()  
-                    {
-                        // If the tile object is a fence gate OR not a torch/fence we consider it interactable.
-                        if (IsItemGate(tileObject) || tileObject is not (Torch or Fence)) 
-                            return true;
-                        
-                        // Otherwise we check for interactable components on buildings if the location is the farm.
-                        return location is Farm farm && IsTileOnBuildingInteractable(farm, tilePos);
-                    }
+                if (IsItemFlooring(__instance) && DoesTileHaveFlooring(terrainFeatures, tilePos))
+                    __result = SwapFlooring((Flooring)terrainFeatures[tilePos]);
+                else if (IsItemFence(__instance) && IsItemFence(tileObject))
+                    __result = SwapFence(tileObject as Fence);
 
+                return !__result; // Skip original logic if there was a successful swap.
 
-                    // We do not swap if:
-                    //  - Both the player-held flooring and tile flooring are the same.
-                    //  - The player is not holding the use tool button and the tile has an interactable object/feature
-                    //      (i.e. mailbox, shipping bin, etc.) (we want their actions to still be accessible).
-                    if (IsItemTargetFlooring(__instance, flooring) || (!holdingToolButton && tileHasInteractable()))
-                        return false;
-
-                    
-                    // We use performToolAction() drops the flooring at tile as an item and generates the respective
-                    // destruction debris, destruction sound, etc. Axes can destroy all flooring.
-                    terrainFeatures[tilePos].performToolAction(new Axe(), 0, tilePos);
-                    terrainFeatures.Remove(tilePos);
-                    
-                    terrainFeatures.Add(tilePos, new Flooring(FlooringInfoMap[__instance.QualifiedItemId]));
-
-                    return true;
-                }
-                
-                bool SwapFence(Fence fence) 
+                bool SwapFence(Fence fence)
                 {
                     // We do not swap if:
                     //  - Both the player-held fence and tile fence are the same (unless the tile fence has been turned
@@ -73,9 +46,9 @@ namespace PlacementPlus.Patches
                     //      can still be used to open gates even if the player-held item is a fence.
                     //  - The player-held item is a gate--we don't want to overwrite the gate's functionality to convert
                     //      fences.
-                    if (IsItemTargetFence(__instance, fence) 
-                        || (!holdingToolButton && fence.isGate.Value) 
-                        || IsItemGate(__instance)) 
+                    if (IsItemTargetFence(__instance, fence)
+                        || (!holdingToolButton && fence.isGate.Value)
+                        || IsItemGate(__instance))
                     { return false; }
 
                     // Before destroying the fence, check if there was a torch.
@@ -83,9 +56,9 @@ namespace PlacementPlus.Patches
 
                     // We must use the correct tool to destroy the fence as if the fence has been converted to a gate,
                     // it needs to drop the gate as well as the original fence.
-                    var usePickaxe = fence.QualifiedItemId is FenceType.Stone_fence or FenceType.Iron_fence;
+                    var usePickaxe = fence.QualifiedItemId is FenceType.StoneFence or FenceType.IronFence;
                     fence.performToolAction(usePickaxe ? new Pickaxe() : new Axe());
-                
+
                     __instance.placementAction(location, x, y);
                     // Ensure that if the original fence has a torch, it is preserved.
                     if (hadTorch) location.getObjectAt(x, y).heldObject.Value = new Torch();
@@ -93,13 +66,34 @@ namespace PlacementPlus.Patches
                     return true;
                 }
 
+                bool SwapFlooring(Flooring flooring)
+                {
+                    // We do not swap if:
+                    //  - Both the player-held flooring and tile flooring are the same.
+                    //  - The player is not holding the use tool button and the tile has an interactable object/feature
+                    //      (i.e. mailbox, shipping bin, etc.) (we want their actions to still be accessible).
+                    if (IsItemTargetFlooring(__instance, flooring) || (!holdingToolButton && TileHasInteractable()))
+                        return false;
 
-                if (IsItemFlooring(__instance) && DoesTileHaveFlooring(terrainFeatures, tilePos))
-                    __result = SwapFlooring((Flooring)terrainFeatures[tilePos]);
-                else if (IsItemFence(__instance) && IsItemFence(tileObject))
-                    __result = SwapFence(tileObject as Fence);
+                    // We use performToolAction() drops the flooring at tile as an item and generates the respective
+                    // destruction debris, destruction sound, etc. Axes can destroy all flooring.
+                    terrainFeatures[tilePos].performToolAction(new Axe(), 0, tilePos);
+                    terrainFeatures.Remove(tilePos);
 
-                return !__result; // Skip original logic if there was a successful swap.
+                    terrainFeatures.Add(tilePos, new Flooring(FlooringInfoMap[__instance.QualifiedItemId]));
+
+                    return true;
+                }
+
+                bool TileHasInteractable()
+                {
+                    // If the tile object is a fence gate OR not a torch/fence we consider it interactable.
+                    if (IsItemGate(tileObject) || tileObject is not (Torch or Fence))
+                        return true;
+
+                    // Otherwise we check for interactable components on buildings if the location is the farm.
+                    return location is Farm farm && IsTileOnBuildingInteractable(farm, tilePos);
+                }
             } catch (Exception e) {
                 Monitor.Log($"Failed in {nameof(ObjectPatches)}:\n{e}", LogLevel.Error);
                 return true; // Run original logic.

@@ -29,15 +29,17 @@ namespace PlacementPlus.Patches
                 // object can be placed, we skip our logic.
                 if (__result || !StardewValley.Utility.tileWithinRadiusOfPlayer((int)tilePos.X, (int)tilePos.Y, 1, f)) 
                     return;
-                
-                
+
                 if (IsItemFlooring(item))
+                {
                     // Assume that any tile that has an object is a valid tile for flooring to be placed.
-                    __result = tileObject != null || 
-                               (location is Farm farm && (IsTileOnBuildingEdge(farm, tilePos) || 
-                                                          DoesTileHaveMainMailbox(farm, tilePos)));
+                    __result = tileObject != null ||
+                               (location is Farm farm && (IsTileOnBuildingEdge(farm, tilePos) || DoesTileHaveMainMailbox(farm, tilePos)));
+                }
                 else if (IsItemFence(item))
+                {
                     __result = IsItemFence(tileObject);
+                }
             } catch (Exception e) {
                 Monitor.Log($"Failed in {nameof(UtilityPatches)}:\n{e}", LogLevel.Error);
             }
